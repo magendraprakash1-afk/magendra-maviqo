@@ -1,0 +1,43 @@
+{
+  "name": "Maviqo — AI College Management Platform",
+  "short_name": "Maviqo",
+  "description": "All-in-one AI-powered college management platform for students, faculty, and administrators.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "scope": "/",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Student Dashboard",
+      "url": "/student/dashboard",
+      "description": "View student attendance, timetable and exams"
+    },
+    {
+      "name": "Mark Attendance",
+      "url": "/faculty/attendance",
+      "description": "Record class attendance"
+    },
+    {
+      "name": "AI Study Assistant",
+      "url": "/student/ai-assistant",
+      "description": "Ask Maviqo AI academic queries"
+    }
+  ]
+}
