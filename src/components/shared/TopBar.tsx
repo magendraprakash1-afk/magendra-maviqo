@@ -11,12 +11,14 @@ import {
 import { DataStore, type NotificationItem } from "@/lib/data-store";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface TopBarProps {
   onMenuToggle: () => void;
 }
 
 export default function TopBar({ onMenuToggle }: TopBarProps) {
+  const router = useRouter();
   const { user, switchRole, logout } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -107,7 +109,11 @@ export default function TopBar({ onMenuToggle }: TopBarProps) {
               {Object.values(ROLES).map((role) => (
                 <button
                   key={role}
-                  onClick={() => { switchRole(role as UserRole); setShowRoleSwitcher(false); }}
+                  onClick={() => {
+                    switchRole(role as UserRole);
+                    setShowRoleSwitcher(false);
+                    router.push(`/${role}/dashboard`);
+                  }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--muted)] transition-colors capitalize ${
                     user.role === role ? "text-primary-500 font-medium" : ""
                   }`}
