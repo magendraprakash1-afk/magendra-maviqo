@@ -8,11 +8,12 @@ import { cn } from "@/lib/utils";
 import { NAV_BY_ROLE } from "@/lib/constants";
 import { initializeMobileApp } from "@/lib/mobile/native";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, CalendarCheck, Clock, FileText, GraduationCap,
   Trophy, CreditCard, Bell, Bot, User, Users, BarChart3, BookOpen,
   Building2, Library, Settings, UserCheck, FileBarChart, IndianRupee, X,
+  Lock, ArrowRight,
 } from "lucide-react";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -24,19 +25,50 @@ const iconMap: Record<string, React.ElementType> = {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     initializeMobileApp();
   }, []);
 
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login");
+    }
+  }, [isLoading, user, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-[var(--muted-foreground)]">Verifying session...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-bold">Please log in</h2>
-          <p className="text-[var(--muted-foreground)] mt-2">You need to be authenticated to access this page.</p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
+        <div className="w-full max-w-sm p-6 rounded-2xl bg-[var(--card)] border border-[var(--border)] text-center shadow-xl space-y-4 animate-in fade-in">
+          <div className="w-12 h-12 rounded-2xl bg-primary-500/10 text-primary-500 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-[var(--foreground)]">Authentication Required</h2>
+            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+              Please sign in to access your institutional portal.
+            </p>
+          </div>
+          <Link
+            href="/login"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-xs font-semibold shadow-lg shadow-primary-500/25 transition-all"
+          >
+            Go to Sign In <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
     );

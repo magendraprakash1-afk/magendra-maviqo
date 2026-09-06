@@ -6,6 +6,9 @@ import {
   demoDepartments,
   demoEvents,
   demoPlacements,
+  demoTodayClasses,
+  demoUpcomingExams,
+  demoResults,
 } from "./demo-data";
 import type { UserRole } from "./constants";
 
@@ -241,8 +244,52 @@ export const DataStore = {
     }
   },
 
+  // ── Clean Slate / Fresh Account Mode ────────────────────────────────────
+  isCleanSlate(): boolean {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("maviqo_clean_slate") === "true";
+  },
+
+  eraseToCleanState() {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("maviqo_clean_slate", "true");
+    setStorage(STORAGE_KEYS.ATTENDANCE_OVERVIEW, {
+      overall: 0,
+      subjects: [],
+      monthlyTrend: [],
+    });
+    setStorage(STORAGE_KEYS.ATTENDANCE_SESSIONS, []);
+    setStorage(STORAGE_KEYS.ASSIGNMENTS, []);
+    setStorage(STORAGE_KEYS.FEES, {
+      totalFee: 0,
+      paid: 0,
+      pending: 0,
+      dueDate: "No dues pending",
+      payments: [],
+    });
+    setStorage(STORAGE_KEYS.NOTIFICATIONS, []);
+    window.dispatchEvent(new Event("maviqo_datastore_change"));
+  },
+
+  loadDemoData() {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("maviqo_clean_slate");
+    setStorage(STORAGE_KEYS.ATTENDANCE_OVERVIEW, demoAttendance);
+    setStorage(STORAGE_KEYS.ASSIGNMENTS, getInitialAssignments());
+    setStorage(STORAGE_KEYS.FEES, demoFeeStatus);
+    setStorage(STORAGE_KEYS.NOTIFICATIONS, demoNotifications);
+    window.dispatchEvent(new Event("maviqo_datastore_change"));
+  },
+
   // ── Attendance ───────────────────────────────────────────────────────────
   getAttendanceOverview() {
+    if (this.isCleanSlate()) {
+      return getStorage(STORAGE_KEYS.ATTENDANCE_OVERVIEW, {
+        overall: 0,
+        subjects: [],
+        monthlyTrend: [],
+      });
+    }
     return getStorage(STORAGE_KEYS.ATTENDANCE_OVERVIEW, demoAttendance);
   },
 
@@ -316,6 +363,9 @@ export const DataStore = {
 
   // ── Assignments ──────────────────────────────────────────────────────────
   getAssignments(): AssignmentItem[] {
+    if (this.isCleanSlate()) {
+      return getStorage<AssignmentItem[]>(STORAGE_KEYS.ASSIGNMENTS, []);
+    }
     return getStorage<AssignmentItem[]>(STORAGE_KEYS.ASSIGNMENTS, getInitialAssignments());
   },
 
@@ -393,6 +443,15 @@ export const DataStore = {
 
   // ── Fees ─────────────────────────────────────────────────────────────────
   getFeeState(): FeeState {
+    if (this.isCleanSlate()) {
+      return getStorage<FeeState>(STORAGE_KEYS.FEES, {
+        totalFee: 0,
+        paid: 0,
+        pending: 0,
+        dueDate: "No dues pending",
+        payments: [],
+      });
+    }
     return getStorage<FeeState>(STORAGE_KEYS.FEES, demoFeeStatus);
   },
 
@@ -451,6 +510,11 @@ export const DataStore = {
 
   // ── Notifications ────────────────────────────────────────────────────────
   getNotifications(role?: UserRole): NotificationItem[] {
+    if (this.isCleanSlate()) {
+      const all = getStorage<NotificationItem[]>(STORAGE_KEYS.NOTIFICATIONS, []);
+      if (!role || role === "admin") return all;
+      return all.filter((n) => !n.targetRole || n.targetRole === "all" || n.targetRole === role);
+    }
     const all = getStorage<NotificationItem[]>(STORAGE_KEYS.NOTIFICATIONS, demoNotifications as NotificationItem[]);
     if (!role || role === "admin") return all;
     return all.filter((n) => !n.targetRole || n.targetRole === "all" || n.targetRole === role);
@@ -539,10 +603,29 @@ export const DataStore = {
   },
 
   getEvents() {
+    if (this.isCleanSlate()) return [];
     return demoEvents;
   },
 
   getPlacements() {
+    if (this.isCleanSlate()) return [];
     return demoPlacements;
+  },
+
+  getTodayClasses() {
+    if (this.isCleanSlate()) return [];
+    return demoTodayClasses;
+  },
+
+  getUpcomingExams() {
+    if (this.isCleanSlate()) return [];
+    return demoUpcomingExams;
+  },
+
+  getResults() {
+    if (this.isCleanSlate()) {
+      return { gpa: 0, cgpa: 0, semesters: [] };
+    }
+    return demoResults;
   },
 };

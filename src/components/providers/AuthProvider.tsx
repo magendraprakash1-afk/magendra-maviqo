@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import type { UserRole } from "@/lib/constants";
+import { type UserRole, ROLE_LABELS } from "@/lib/constants";
 import { isSupabaseConfigured, createClient } from "@/lib/supabase/client";
 import { DataStore } from "@/lib/data-store";
 
@@ -43,7 +43,7 @@ interface LoginResult {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string, collegeName?: string) => Promise<LoginResult>;
+  login: (email: string, password: string, collegeName?: string, role?: UserRole) => Promise<LoginResult>;
   logout: () => Promise<void>;
   register: (userData: Omit<User, "id">, password: string) => Promise<LoginResult>;
   socialLogin: (provider: "google" | "apple" | "microsoft", role: UserRole, collegeName?: string) => Promise<LoginResult>;
@@ -217,13 +217,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           setUser(JSON.parse(savedUser));
         } catch {
-          setUser(INITIAL_USERS["karthik@maviqo.edu"]);
+          setUser(null);
         }
       } else if (isMounted) {
-        // Default to Karthik Raj (student) on clean launch
-        const defaultUser = INITIAL_USERS["karthik@maviqo.edu"];
-        setUser(defaultUser);
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(defaultUser));
+        // Leave unauthenticated on clean launch so user selects their own role/college
+        setUser(null);
       }
 
       if (isMounted) {
@@ -293,7 +291,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isLiveSupabase]);
 
   // Login Handler (Supabase with Local Fallback)
-  const login = async (email: string, password: string, collegeName?: string): Promise<LoginResult> => {
+  const login = async (
+    email: string,
+    password: string,
+    collegeName?: string,
+    role?: UserRole
+  ): Promise<LoginResult> => {
     setIsLoading(true);
 
     // 1. If Supabase is live, try authenticating via Supabase Auth
@@ -313,7 +316,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: data.user.id,
             name: profile?.full_name || data.user.email?.split("@")[0] || "User",
             email: data.user.email!,
-            role: (profile?.role as UserRole) || "student",
+            role: (profile?.role as UserRole) || role || "student",
             avatar: profile?.avatar_url || null,
             department: profile?.department || undefined,
             program: profile?.program || undefined,
@@ -335,54 +338,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // 2. Local Account Verification (instant demo accounts + registered accounts)
-    await new Promise((r) => setTimeout(r, 350));
+    // 2. Local Account Verification & On-the-fly Clean Creation
+    await new Promise((r) => setTimeout(r, 300));
 
     const storedAccounts = JSON.parse(localStorage.getItem(REGISTERED_ACCOUNTS_KEY) || "{}");
-    const account = storedAccounts[email.toLowerCase()] || INITIAL_USERS[email.toLowerCase()];
+    const existingAccount = storedAccounts[email.toLowerCase()] || INITIAL_USERS[email.toLowerCase()];
 
-    if (!account) {
+    if (existingAccount) {
+      if (existingAccount.passwordHash && existingAccount.passwordHash !== password) {
+        setIsLoading(false);
+        return { success: false, error: "Incorrect password. Please verify and try again." };
+      }
+
+      const authenticatedUser: User = {
+        ...existingAccount,
+        collegeName: collegeName || existingAccount.collegeName || "Sri Maviqo Engineering College",
+        role: role || existingAccount.role,
+        socialProvider: "email",
+      };
+
+      setUser(authenticatedUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(authenticatedUser));
       setIsLoading(false);
-      return { success: false, error: "No account found with this email address." };
+      return { success: true, user: authenticatedUser };
     }
 
-    if (account.passwordHash !== password) {
-      setIsLoading(false);
-      return { success: false, error: "Incorrect password. Please verify and try again." };
-    }
+    // New User Entry -> Clean account with zero pre-filled mock rows
+    const targetRole = role || "student";
+    const rawName = email.split("@")[0].replace(/[._-]/g, " ");
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const chosenCollege = collegeName || "Sri Maviqo Engineering College";
 
-    const authenticatedUser: User = {
-      id: account.id,
-      name: account.name,
-      email: account.email,
-      role: account.role,
-      avatar: account.avatar || null,
-      department: account.department,
-      program: account.program,
-      semester: account.semester,
-      rollNumber: account.rollNumber,
-      section: account.section,
-      designation: account.designation,
-      employeeId: account.employeeId,
-      collegeName: collegeName || account.collegeName || "Sri Maviqo Engineering College",
-      advisor: account.advisor,
-      batch: account.batch,
-      bloodGroup: account.bloodGroup,
-      phone: account.phone,
-      libraryId: account.libraryId,
-      cabin: account.cabin,
-      officeHours: account.officeHours,
-      specialization: account.specialization,
-      guardianName: account.guardianName,
-      guardianPhone: account.guardianPhone,
-      hostelStatus: account.hostelStatus,
+    const newCleanUser: User = {
+      id: `usr_${Date.now()}`,
+      name: formattedName || `New ${ROLE_LABELS[targetRole]}`,
+      email: email.toLowerCase(),
+      role: targetRole,
+      collegeName: chosenCollege,
+      department: "Computer Science & Engineering",
+      program: targetRole === "student" ? "B.Tech Computer Science & Engineering" : undefined,
+      semester: targetRole === "student" ? 1 : undefined,
+      section: "A",
+      rollNumber: targetRole === "student" ? `2026STU${Math.floor(100 + Math.random() * 900)}` : undefined,
+      employeeId: targetRole !== "student" ? `2026${targetRole.toUpperCase().slice(0, 3)}${Math.floor(100 + Math.random() * 900)}` : undefined,
+      avatar: null,
       socialProvider: "email",
     };
 
-    setUser(authenticatedUser);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(authenticatedUser));
+    storedAccounts[email.toLowerCase()] = { ...newCleanUser, passwordHash: password };
+    localStorage.setItem(REGISTERED_ACCOUNTS_KEY, JSON.stringify(storedAccounts));
+
+    // Erase mock rows to start fresh with 0 rows
+    DataStore.eraseToCleanState();
+
+    setUser(newCleanUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newCleanUser));
     setIsLoading(false);
-    return { success: true, user: authenticatedUser };
+    return { success: true, user: newCleanUser };
   };
 
   // Social Authentication (Google, Apple, Microsoft)
@@ -395,46 +407,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const selectedCollege = collegeName || "Sri Maviqo Engineering College";
     const providerCapitalized = provider.charAt(0).toUpperCase() + provider.slice(1);
+    const collegeSlug = selectedCollege.toLowerCase().replace(/[^a-z0-9]/g, "") || "maviqo";
 
-    // If Supabase is configured, trigger OAuth flow
-    if (isLiveSupabase && typeof window !== "undefined") {
-      try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: provider as "google" | "apple" | "azure",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback?next=/`,
-            queryParams: {
-              access_type: "offline",
-              prompt: "consent",
-            },
-          },
-        });
+    await new Promise((r) => setTimeout(r, 350));
 
-        if (!error) {
-          return { success: true };
-        }
-        console.warn("Supabase OAuth redirect error:", error.message);
-      } catch (err) {
-        console.warn("Supabase OAuth exception:", err);
-      }
-    }
-
-    // Seamless instant fallback (e.g. while OAuth credentials are being registered in Supabase dashboard)
-    await new Promise((r) => setTimeout(r, 450));
-
-    const baseAccount = Object.values(INITIAL_USERS).find((u) => u.role === role) || INITIAL_USERS["karthik@maviqo.edu"];
-
+    // Fresh user account for social sign-in with chosen role & college
     const socialUser: User = {
-      ...baseAccount,
       id: `usr_${provider}_${Date.now()}`,
-      name: `${baseAccount.name} (${providerCapitalized})`,
-      email: `${role}.${provider}@${selectedCollege.toLowerCase().replace(/[^a-z0-9]/g, "") || "maviqo"}.edu`,
+      name: `${ROLE_LABELS[role]} (${providerCapitalized})`,
+      email: `${role}.${provider}@${collegeSlug}.edu`,
       role,
       collegeName: selectedCollege,
       socialProvider: provider,
       avatar: null,
+      department: "Computer Science & Engineering",
+      program: role === "student" ? "B.Tech Computer Science & Engineering" : undefined,
+      semester: role === "student" ? 1 : undefined,
+      section: "A",
+      rollNumber: role === "student" ? `2026STU${Math.floor(100 + Math.random() * 900)}` : undefined,
+      employeeId: role !== "student" ? `2026${role.toUpperCase().slice(0, 3)}${Math.floor(100 + Math.random() * 900)}` : undefined,
     };
+
+    // Erase mock rows for fresh social account
+    DataStore.eraseToCleanState();
 
     setUser(socialUser);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(socialUser));
@@ -566,6 +561,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUser(null);
     localStorage.removeItem(USER_STORAGE_KEY);
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   };
 
   // Role Switcher for preview and rapid navigation
