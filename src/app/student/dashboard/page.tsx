@@ -9,6 +9,7 @@ import {
   demoTodayClasses, demoUpcomingExams, demoResults,
 } from "@/lib/demo-data";
 import { getGreeting, formatCurrency, formatPercentage, cn } from "@/lib/utils";
+import { DEFAULT_COLLEGE } from "@/lib/constants";
 import {
   CalendarCheck, Clock, FileText, GraduationCap, CreditCard,
   Trophy, Bell, TrendingUp, ChevronRight, BookOpen, AlertCircle,
@@ -55,7 +56,7 @@ export default function StudentDashboard() {
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm text-xs font-semibold">
               <Building2 className="w-3.5 h-3.5" />
-              <span>{user.collegeName || "Sri Maviqo Engineering College"}</span>
+              <span>{user.collegeName || DEFAULT_COLLEGE}</span>
             </div>
             <span className="px-2.5 py-1 rounded-full bg-white/20 font-mono text-xs font-bold tracking-wide">
               Roll No: {user.rollNumber || "22CSE101"}

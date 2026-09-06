@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { DASHBOARD_ROUTES, ROLE_LABELS, type UserRole, ROLES } from "@/lib/constants";
+import { DASHBOARD_ROUTES, ROLE_LABELS, type UserRole, ROLES, COLLEGES, DEFAULT_COLLEGE } from "@/lib/constants";
 import { DataStore } from "@/lib/data-store";
 import {
   LogIn,
@@ -27,16 +27,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const COLLEGES = [
-  "Sri Maviqo Engineering College",
-  "Indian Institute of Technology (IIT), Madras",
-  "Anna University, Chennai",
-  "National Institute of Technology (NIT), Trichy",
-  "Stanford University",
-  "Massachusetts Institute of Technology (MIT)",
-  "Other Institution...",
-];
 
 const ROLE_CONFIGS: Record<
   UserRole,
@@ -118,8 +108,8 @@ export default function LoginPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const getEffectiveCollege = () => {
-    if (isCustomMode || selectedCollege === "Other Institution...") {
-      return customCollege.trim() || "Sri Maviqo Engineering College";
+    if (isCustomMode || selectedCollege.includes("Other Institution")) {
+      return customCollege.trim() || DEFAULT_COLLEGE;
     }
     return selectedCollege;
   };
@@ -324,7 +314,7 @@ export default function LoginPage() {
             value={selectedCollege}
             onChange={(e) => {
               setSelectedCollege(e.target.value);
-              if (e.target.value === "Other Institution...") {
+              if (e.target.value.includes("Other Institution")) {
                 setIsCustomMode(true);
               }
             }}

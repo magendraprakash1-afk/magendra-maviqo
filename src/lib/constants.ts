@@ -155,3 +155,40 @@ export const GRADE_POINTS: Record<string, number> = {
 
 export const ATTENDANCE_THRESHOLD = 75;
 export const LOW_ATTENDANCE_WARNING = 80;
+
+// ─── Real & Authentic Institutional Directory ──────────────────────────────
+export const COLLEGES = [
+  "Indian Institute of Technology (IIT), Madras",
+  "College of Engineering, Guindy (CEG), Anna University",
+  "National Institute of Technology (NIT), Tiruchirappalli",
+  "PSG College of Technology, Coimbatore",
+  "Coimbatore Institute of Technology (CIT)",
+  "Sri Sivasubramaniya Nadar (SSN) College of Engineering, Chennai",
+  "Vellore Institute of Technology (VIT), Vellore",
+  "Madras Institute of Technology (MIT), Chromepet",
+  "Thiagarajar College of Engineering (TCE), Madurai",
+  "Government College of Technology (GCT), Coimbatore",
+  "Kumaraguru College of Technology (KCT), Coimbatore",
+  "Amrita Vishwa Vidyapeetham, Coimbatore",
+  "SRM Institute of Science and Technology, Kattankulathur",
+  "SASTRA Deemed to be University, Thanjavur",
+  "Bannari Amman Institute of Technology (BIT), Sathyamangalam",
+  "Sri Krishna College of Engineering and Technology (SKCET), Coimbatore",
+  "Kongu Engineering College (KEC), Perundurai",
+  "Rajalakshmi Engineering College (REC), Chennai",
+  "St. Joseph's College of Engineering, Chennai",
+  "Sri Venkateswara College of Engineering (SVCE), Sriperumbudur",
+  "Indian Institute of Science (IISc), Bangalore",
+  "Indian Institute of Technology (IIT), Bombay",
+  "Indian Institute of Technology (IIT), Delhi",
+  "Birla Institute of Technology and Science (BITS), Pilani",
+  "National Institute of Technology (NIT), Surathkal",
+  "Delhi Technological University (DTU), Delhi",
+  "Stanford University",
+  "Massachusetts Institute of Technology (MIT)",
+  "Harvard University",
+  "Oxford University",
+  "Other Institution (Type Custom)...",
+];
+
+export const DEFAULT_COLLEGE = COLLEGES[0];

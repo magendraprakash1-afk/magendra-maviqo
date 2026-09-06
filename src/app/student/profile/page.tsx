@@ -3,6 +3,7 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import PageHeader from "@/components/shared/PageHeader";
 import { getInitials } from "@/lib/utils";
+import { DEFAULT_COLLEGE } from "@/lib/constants";
 import {
   User,
   Mail,
@@ -84,7 +85,7 @@ export default function StudentProfile() {
 
             <p className="text-xs text-[var(--muted-foreground)] flex items-center justify-center sm:justify-start gap-1.5 pt-1">
               <Building2 className="w-3.5 h-3.5 text-primary-500" />
-              <span className="font-semibold text-[var(--foreground)]">{user.collegeName || "Sri Maviqo Engineering College"}</span>
+              <span className="font-semibold text-[var(--foreground)]">{user.collegeName || DEFAULT_COLLEGE}</span>
             </p>
 
             <div className="flex flex-wrap gap-2 pt-2 justify-center sm:justify-start">

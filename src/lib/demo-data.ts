@@ -2,6 +2,8 @@
 // This file provides realistic seed data for all dashboards so the app
 // looks populated without needing a Supabase connection.
 
+import { DEFAULT_COLLEGE } from "@/lib/constants";
+
 export const demoUser = {
   id: "usr_001",
   name: "Karthik Raj",
@@ -14,7 +16,7 @@ export const demoUser = {
   rollNumber: "22CSE101",
   section: "A",
   collegeId: "col_001",
-  collegeName: "Sri Maviqo Engineering College",
+  collegeName: DEFAULT_COLLEGE,
 };
 
 export const demoFaculty = {

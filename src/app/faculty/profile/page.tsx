@@ -3,6 +3,7 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import PageHeader from "@/components/shared/PageHeader";
 import { getInitials } from "@/lib/utils";
+import { DEFAULT_COLLEGE } from "@/lib/constants";
 import {
   User,
   Mail,
@@ -61,7 +62,7 @@ export default function FacultyProfilePage() {
                 </p>
                 <p className="text-xs text-[var(--muted-foreground)] flex items-center justify-center sm:justify-start gap-1 mt-0.5">
                   <Building2 className="w-3.5 h-3.5 text-primary-500" />
-                  <span>{user?.collegeName || "Sri Maviqo Engineering College"}</span>
+                  <span>{user?.collegeName || DEFAULT_COLLEGE}</span>
                 </p>
               </div>
               <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-xs font-mono font-bold self-center sm:self-auto">

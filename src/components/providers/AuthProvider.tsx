@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { type UserRole, ROLE_LABELS } from "@/lib/constants";
+import { type UserRole, ROLE_LABELS, DEFAULT_COLLEGE } from "@/lib/constants";
 import { isSupabaseConfigured, createClient } from "@/lib/supabase/client";
 import { DataStore } from "@/lib/data-store";
 
@@ -69,7 +69,7 @@ const INITIAL_USERS: Record<string, User & { passwordHash: string }> = {
     rollNumber: "22CSE101",
     section: "A",
     collegeId: "col_001",
-    collegeName: "Sri Maviqo Engineering College",
+    collegeName: DEFAULT_COLLEGE,
     advisor: "Dr. Priya Lakshmi (Assoc. Prof)",
     batch: "2022 - 2026",
     bloodGroup: "O+",
@@ -90,7 +90,7 @@ const INITIAL_USERS: Record<string, User & { passwordHash: string }> = {
     designation: "Associate Professor",
     employeeId: "FAC2024001",
     collegeId: "col_001",
-    collegeName: "Sri Maviqo Engineering College",
+    collegeName: DEFAULT_COLLEGE,
     cabin: "Cabin 402, CS Tech Park",
     phone: "+91 98765 43210",
     specialization: "Algorithms, Distributed Systems & Edge AI",
@@ -107,7 +107,7 @@ const INITIAL_USERS: Record<string, User & { passwordHash: string }> = {
     designation: "Professor & HOD",
     employeeId: "FAC2020001",
     collegeId: "col_001",
-    collegeName: "Sri Maviqo Engineering College",
+    collegeName: DEFAULT_COLLEGE,
     cabin: "HOD Chamber, CS Block 1st Floor",
     phone: "+91 98765 11223",
     specialization: "Cloud Computing, Data Analytics",
@@ -122,7 +122,7 @@ const INITIAL_USERS: Record<string, User & { passwordHash: string }> = {
     avatar: null,
     designation: "System Administrator",
     collegeId: "col_001",
-    collegeName: "Sri Maviqo Engineering College",
+    collegeName: DEFAULT_COLLEGE,
     phone: "+91 98765 99887",
   },
   "management@maviqo.edu": {
@@ -134,7 +134,7 @@ const INITIAL_USERS: Record<string, User & { passwordHash: string }> = {
     avatar: null,
     designation: "Director & Trustee",
     collegeId: "col_001",
-    collegeName: "Sri Maviqo Engineering College",
+    collegeName: DEFAULT_COLLEGE,
     phone: "+91 98765 77665",
   },
   "parent@maviqo.edu": {
@@ -145,7 +145,7 @@ const INITIAL_USERS: Record<string, User & { passwordHash: string }> = {
     role: "parent",
     avatar: null,
     collegeId: "col_001",
-    collegeName: "Sri Maviqo Engineering College",
+    collegeName: DEFAULT_COLLEGE,
     phone: "+91 98401 98765",
   },
 };
@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 rollNumber: profile.roll_number || undefined,
                 section: profile.section || undefined,
                 collegeId: profile.college_id || "col_001",
-                collegeName: profile.college_name || "Sri Maviqo Engineering College",
+                collegeName: profile.college_name || DEFAULT_COLLEGE,
                 designation: profile.designation || undefined,
                 employeeId: profile.employee_id || undefined,
                 socialProvider: (profile.social_provider as User["socialProvider"]) || "email",
@@ -260,7 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 rollNumber: profile.roll_number || undefined,
                 section: profile.section || undefined,
                 collegeId: profile.college_id || "col_001",
-                collegeName: profile.college_name || "Sri Maviqo Engineering College",
+                collegeName: profile.college_name || DEFAULT_COLLEGE,
                 designation: profile.designation || undefined,
                 employeeId: profile.employee_id || undefined,
                 socialProvider: (profile.social_provider as User["socialProvider"]) || "email",
@@ -323,7 +323,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             semester: profile?.semester || undefined,
             rollNumber: profile?.roll_number || undefined,
             section: profile?.section || undefined,
-            collegeName: collegeName || profile?.college_name || "Sri Maviqo Engineering College",
+            collegeName: collegeName || profile?.college_name || DEFAULT_COLLEGE,
             socialProvider: "email",
           };
 
@@ -352,7 +352,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const authenticatedUser: User = {
         ...existingAccount,
-        collegeName: collegeName || existingAccount.collegeName || "Sri Maviqo Engineering College",
+        collegeName: collegeName || existingAccount.collegeName || DEFAULT_COLLEGE,
         role: role || existingAccount.role,
         socialProvider: "email",
       };
@@ -367,7 +367,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const targetRole = role || "student";
     const rawName = email.split("@")[0].replace(/[._-]/g, " ");
     const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-    const chosenCollege = collegeName || "Sri Maviqo Engineering College";
+    const chosenCollege = collegeName || DEFAULT_COLLEGE;
 
     const newCleanUser: User = {
       id: `usr_${Date.now()}`,
@@ -405,7 +405,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ): Promise<LoginResult> => {
     setIsLoading(true);
 
-    const selectedCollege = collegeName || "Sri Maviqo Engineering College";
+    const selectedCollege = collegeName || DEFAULT_COLLEGE;
     const providerCapitalized = provider.charAt(0).toUpperCase() + provider.slice(1);
     const collegeSlug = selectedCollege.toLowerCase().replace(/[^a-z0-9]/g, "") || "maviqo";
 
@@ -452,7 +452,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               first_name: userData.name.split(" ")[0],
               last_name: userData.name.split(" ").slice(1).join(" ") || "",
               role: userData.role,
-              college_name: userData.collegeName || "Sri Maviqo Engineering College",
+              college_name: userData.collegeName || DEFAULT_COLLEGE,
               department: userData.department,
               roll_number: userData.rollNumber,
             },
@@ -478,7 +478,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: userData.email,
               full_name: userData.name,
               role: userData.role,
-              college_name: userData.collegeName || "Sri Maviqo Engineering College",
+              college_name: userData.collegeName || DEFAULT_COLLEGE,
               department: userData.department || null,
               program: userData.program || null,
               semester: userData.semester || null,
@@ -512,7 +512,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: `usr_${Date.now()}`,
       ...userData,
       passwordHash: password,
-      collegeName: userData.collegeName || "Sri Maviqo Engineering College",
+      collegeName: userData.collegeName || DEFAULT_COLLEGE,
     };
 
     storedAccounts[userData.email.toLowerCase()] = newUser;

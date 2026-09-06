@@ -4,25 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { DASHBOARD_ROUTES, ROLE_LABELS, type UserRole, ROLES } from "@/lib/constants";
+import { DASHBOARD_ROUTES, ROLE_LABELS, type UserRole, ROLES, COLLEGES, DEFAULT_COLLEGE } from "@/lib/constants";
 import { UserPlus, Mail, Lock, User, Building2, GraduationCap, Briefcase, ArrowRight, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const COLLEGES = [
-  "Sri Maviqo Engineering College",
-  "Indian Institute of Technology (IIT), Madras",
-  "Anna University, Chennai",
-  "National Institute of Technology (NIT), Trichy",
-  "Stanford University",
-  "Massachusetts Institute of Technology (MIT)",
-  "Other Institution...",
-];
 
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
   const [role, setRole] = useState<UserRole>("student");
-  const [selectedCollege, setSelectedCollege] = useState(COLLEGES[0]);
+  const [selectedCollege, setSelectedCollege] = useState(DEFAULT_COLLEGE);
   const [customCollege, setCustomCollege] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -36,8 +26,8 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const getEffectiveCollege = () => {
-    if (selectedCollege === "Other Institution...") {
-      return customCollege.trim() || "Maviqo Partner Institute";
+    if (selectedCollege.startsWith("Other Institution")) {
+      return customCollege.trim() || DEFAULT_COLLEGE;
     }
     return selectedCollege;
   };
@@ -107,7 +97,7 @@ export default function RegisterPage() {
               </option>
             ))}
           </select>
-          {selectedCollege === "Other Institution..." && (
+          {selectedCollege.startsWith("Other Institution") && (
             <input
               type="text"
               placeholder="Enter College Name"
